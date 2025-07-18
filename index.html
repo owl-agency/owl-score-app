@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owl Score - Diagnostic Marketing Digital</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            /* Colors */
+            --color-background: rgba(252, 252, 249, 1);
+            --color-surface: rgba(255, 255, 253, 1);
+            --color-text: rgba(19, 52, 59, 1);
+            --color-text-secondary: rgba(98, 108, 113, 1);
+            --color-primary: rgba(33, 128, 141, 1);
+            --color-primary-hover: rgba(29, 116, 128, 1);
+            --color-primary-active: rgba(26, 104, 115, 1);
+            --color-secondary: rgba(241, 245, 249, 1);
+            --color-secondary-hover: rgba(226, 232, 240, 1);
+            --color-border: rgba(224, 224, 224, 1);
+            --color-btn-primary-text: rgba(252, 252, 249, 1);
+            --color-card-border: rgba(230, 230, 230, 1);
+            --color-focus-ring: rgba(33, 128, 141, 0.4);
+
+            /* Typography */
+            --font-family-base: "Poppins", "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-bold: 700;
+
+            /* Spacing & Radius */
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-24: 24px;
+            --space-32: 32px;
+            --radius-base: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-full: 9999px;
+
+            /* Shadows */
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.05), 0 5px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background-color: var(--color-background);
+            color: var(--color-text);
+            margin: 0;
+            padding: var(--space-16);
+            -webkit-font-smoothing: antialiased;
+            font-weight: var(--font-weight-normal);
+        }
+        
+        * {
+            font-weight: var(--font-weight-normal);
+        }
+
+        h1, h2, h3, h4, strong, .option-label, .maturity-level span, .score-circle span, .modal-header h3 {
+            font-weight: var(--font-weight-bold);
+        }
+        .btn, .axis-item, .form-label, .progress-text, .question-category-display {
+             font-weight: var(--font-weight-medium);
+        }
+
+        .container { max-width: 768px; margin: 0 auto; }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background-color: var(--color-surface); border-radius: var(--radius-xl); padding: var(--space-32); border: 1px solid var(--color-card-border); box-shadow: var(--shadow-lg); margin-top: var(--space-24); }
+        .card__body { padding: 0; }
+        .card__body h2 { font-size: 1.5rem; margin-bottom: var(--space-8); }
+        .card__body p { color: var(--color-text-secondary); margin-bottom: var(--space-24); }
+
+        .header { text-align: center; margin-bottom: var(--space-24); }
+        .header h1 { font-size: 2.2rem; color: #1F2937; margin:0; }
+        .header .subtitle { font-size: 1.1rem; color: var(--color-text-secondary); }
+        
+        .owl-logo { margin-bottom: 1rem; }
+        .owl { display: inline-block; width: 60px; height: 60px; }
+        .owl-body { width: 100%; height: 100%; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-active)); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; position: relative; animation: owlFloat 3s ease-in-out infinite; }
+        .owl-eyes { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+        .eye { width: 12px; height: 12px; background: white; border-radius: 50%; position: relative; animation: blink 4s infinite; }
+        .pupil { width: 6px; height: 6px; background: var(--color-text); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .owl-beak { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid #f59e0b; }
+        @keyframes owlFloat { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+        @keyframes blink { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: var(--space-12) var(--space-24); border-radius: var(--radius-base); font-size: 1rem; cursor: pointer; transition: all 0.2s ease; border: none; text-decoration: none; }
+        .btn--primary { background: var(--color-primary); color: var(--color-btn-primary-text); }
+        .btn--primary:hover { background: var(--color-primary-hover); }
+        .btn--secondary { background: var(--color-secondary); color: var(--color-text); }
+        .btn--secondary:hover { background-color: var(--color-secondary-hover); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .cta-buttons { display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap; }
+        
+        .axes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-12); margin: var(--space-24) 0; }
+        .axis-item { background: var(--color-secondary); padding: var(--space-12); border-radius: var(--radius-base); text-align: center; transition: all 0.2s ease; }
+        .axis-item:hover { background: var(--color-secondary-hover); }
+
+        .progress-bar { width: 100%; height: 8px; background: var(--color-secondary); border-radius: var(--radius-full); overflow: hidden; margin-bottom: var(--space-8); }
+        .progress-fill { height: 100%; background: var(--color-primary); border-radius: var(--radius-full); transition: width 0.4s ease; width: 0%; }
+        
+        .question-category-display { text-align: center; margin-bottom: var(--space-16); padding: var(--space-8) var(--space-16); background-color: var(--color-secondary); border-radius: var(--radius-full); display: inline-block; left: 50%; position: relative; transform: translateX(-50%); }
+
+        .question-card h3 { margin-bottom: var(--space-24); font-size: 1.4rem; }
+        .options { display: flex; flex-direction: column; gap: var(--space-12); }
+        .option { padding: var(--space-16); border: 2px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); cursor: pointer; transition: all 0.2s ease; }
+        .option:hover { border-color: var(--color-primary); background: rgba(33, 128, 141, 0.05); }
+        .option.selected { border-color: var(--color-primary); background: rgba(33, 128, 141, 0.1); box-shadow: 0 0 0 2px var(--color-primary); }
+        .option-description { font-size: 0.9rem; color: var(--color-text-secondary); }
+        .quiz-navigation { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-24); }
+
+        .results-header { text-align: center; }
+        .score-circle { width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-active)); display: flex; align-items: center; justify-content: center; margin: var(--space-16) auto; }
+        
+        .chart-container { height: 350px; margin: var(--space-32) auto; }
+        .recommendations { margin-top: 2rem; }
+        .recommendations h3 { color: var(--color-primary); border-bottom: 2px solid var(--color-primary); padding-bottom: var(--space-8); margin-bottom: var(--space-16); }
+        .recommendations h4 { font-size: 1.1rem; margin-top: 1.5rem; }
+        
+        .loader { text-align: center; padding: 40px; }
+        .loader-spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--color-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .disclaimer { font-size: 0.8rem; color: var(--color-text-secondary); text-align: center; margin-top: var(--space-32); border-top: 1px solid var(--color-border); padding-top: var(--space-16); }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: var(--color-surface); border-radius: var(--radius-lg); max-width: 500px; width: 90%; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-16); border-bottom: 1px solid var(--color-border); }
+        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+        .modal form { padding: var(--space-24); }
+        .form-group { margin-bottom: var(--space-16); }
+        .form-label { display: block; margin-bottom: var(--space-8); }
+        .form-control { display: block; width: 100%; padding: var(--space-12); border: 1px solid var(--color-border); border-radius: var(--radius-base); }
+        .form-control:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-focus-ring); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Home Screen -->
+        <div id="home-screen" class="screen active">
+             <div class="header">
+                <div class="owl-logo"><div class="owl"><div class="owl-body"><div class="owl-eyes"><div class="eye"></div><div class="eye"></div></div><div class="owl-beak"></div></div></div></div>
+                <h1>Owl Score</h1>
+                <p class="subtitle">Diagnostic de Maturité Marketing Digital</p>
+            </div>
+            <div class="card">
+                 <div class="card__body">
+                    <h2>Évaluez votre maturité marketing digital</h2>
+                    <p>Découvrez le niveau de maturité de votre stratégie marketing digital à travers 12 axes essentiels :</p>
+                    <div id="axes-grid" class="axes-grid"></div>
+                    <div class="cta-buttons">
+                        <button class="btn btn--primary" onclick="startQuiz()">Commencer le diagnostic</button>
+                        <button class="btn btn--secondary" onclick="showDemo()">Voir un exemple</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="screen">
+            <div class="card">
+                <div class="quiz-header">
+                    <div id="question-category-display"></div>
+                    <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+                    <p id="progress-text" class="progress-text"></p>
+                </div>
+                <div class="question-card">
+                    <h3 id="question-text"></h3>
+                    <div id="question-options" class="options"></div>
+                </div>
+                <div class="quiz-navigation">
+                    <div>
+                        <button class="btn btn--secondary" id="home-btn" onclick="goHome()">Accueil</button>
+                        <button class="btn btn--secondary" id="prev-btn" onclick="previousQuestion()">Précédent</button>
+                    </div>
+                    <button class="btn btn--secondary" id="skip-btn" onclick="skipTheme()">Ne s'applique pas</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Light Results Screen -->
+        <div id="light-results-screen" class="screen">
+             <div class="card">
+                <div class="results-header">
+                    <h2>Votre Diagnostic Rapide</h2>
+                    <div class="overall-score">
+                        <div class="score-circle"><span id="light-overall-score">0%</span></div>
+                        <div class="maturity-level"><span id="light-maturity-level"></span></div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="light-radar-chart"></canvas>
+                </div>
+                <div id="light-recommendations" class="recommendations"></div>
+                <div class="cta-buttons">
+                    <button class="btn btn--primary" onclick="showLeadForm()">Obtenir le diagnostic complet et détaillé</button>
+                    <button class="btn btn--secondary" onclick="restartQuiz()">Refaire le diagnostic</button>
+                </div>
+                <div class="disclaimer">
+                    Ce diagnostic est généré par une IA et constitue une première évaluation. Pour des recommandations entièrement personnalisées, consultez un expert.
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Report Screen -->
+        <div id="full-report-screen" class="screen">
+            <div class="card" id="full-report-content">
+                 <div class="results-header">
+                    <h2>Votre Diagnostic Complet</h2>
+                 </div>
+                 <div id="full-recommendations" class="recommendations"></div>
+                 <div class="cta-buttons">
+                    <button class="btn btn--primary" onclick="downloadPDF()">Télécharger le rapport PDF</button>
+                    <button class="btn btn--secondary" onclick="restartQuiz()">Refaire le diagnostic</button>
+                 </div>
+                 <div class="disclaimer">
+                    Ce diagnostic est généré par une IA et constitue une première évaluation. Pour des recommandations entièrement personnalisées, consultez un expert.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lead Form Modal -->
+        <div id="lead-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Recevez votre rapport détaillé</h3>
+                    <button class="modal-close" onclick="closeLeadForm()">&times;</button>
+                </div>
+                <form id="lead-form" onsubmit="submitLeadForm(event)">
+                    <div class="form-group"><label class="form-label" for="firstname">Prénom *</label><input type="text" id="firstname" class="form-control" required></div>
+                    <div class="form-group"><label class="form-label" for="email">Email *</label><input type="email" id="email" class="form-control" required></div>
+                    <div class="form-group"><label class="form-label" for="company">Entreprise</label><input type="text" id="company" class="form-control"></div>
+                    <div class="form-group"><label class="form-label" for="sector">Secteur d'activité</label><select id="sector" class="form-control"><option value="">Sélectionnez votre secteur</option><option value="E-commerce">E-commerce</option><option value="B2B">B2B</option><option value="Retail">Retail</option><option value="Services">Services</option></select></div>
+                    <button type="submit" class="btn btn--primary" style="width: 100%;">Voir mon diagnostic complet</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const APP_CONFIG = {
+                axes: [ 
+                    { id: 'branding', name: 'Branding', icon: '🎨' },
+                    { id: 'ux', name: 'UX Design', icon: '🧑‍💻' },
+                    { id: 'analytics', name: 'Analytics', icon: '📊' },
+                    { id: 'seo', name: 'SEO', icon: '🔍' },
+                    { id: 'social_proof', name: 'Preuve Sociale', icon: '⭐' },
+                    { id: 'email', name: 'E-mailing', icon: '📧' },
+                    { id: 'social', name: 'Réseaux Sociaux', icon: '📱' },
+                    { id: 'sea', name: 'Publicité Payante', icon: '💰' },
+                    { id: 'ecommerce', name: 'E-commerce', icon: '🛒' },
+                    { id: 'automation', name: 'Automation', icon: '🤖' },
+                    { id: 'ai', name: 'IA Marketing', icon: '🧠' },
+                    { id: 'rgpd', name: 'RGPD & Conformité', icon: '🔒' }
+                ],
+                maturityLevels: { beginner: { min: 0, max: 30, label: 'Débutant' }, intermediate: { min: 31, max: 60, label: 'Intermédiaire' }, advanced: { min: 61, max: 80, label: 'Avancé' }, expert: { min: 81, max: 100, label: 'Expert' }}
+            };
+
+            const QUIZ_QUESTIONS = [
+                // 1. Branding
+                { id: 1, axis: 'branding', question: "Votre identité visuelle (logo, couleurs) est-elle définie et appliquée partout ?", options: [ { value: 0, label: "Non définie", description: "Nous n'avons pas de charte graphique formalisée." }, { value: 1, label: "Partiellement", description: "Elle existe mais n'est pas toujours respectée." }, { value: 2, label: "Oui, partout", description: "Elle est appliquée sur tous nos supports." }, { value: 3, label: "Oui, et elle évolue", description: "Nous la mettons à jour pour rester pertinents." }] },
+                { id: 2, axis: 'branding', question: "Avez-vous défini un 'ton de voix' (Tone of Voice) pour votre communication ?", options: [ { value: 0, label: "Non", description: "Nous écrivons sans ligne directrice précise." }, { value: 1, label: "Informel", description: "Le ton dépend de la personne qui écrit." }, { value: 2, label: "Oui, défini", description: "Nous avons un guide sur le ton à employer." }, { value: 3, label: "Oui, et partagé", description: "Toute l'équipe connaît et applique notre ton de voix." }] },
+                { id: 3, axis: 'branding', question: "Votre proposition de valeur unique est-elle claire et visible ?", options: [ { value: 0, label: "Non formulée", description: "Nous n'avons pas formalisé ce qui nous rend unique." }, { value: 1, label: "Définie en interne", description: "Nous savons ce qui nous différencie, mais nos clients pas forcément." }, { value: 2, label: "Visible", description: "Elle est clairement indiquée sur notre site et nos documents." }, { value: 3, label: "Intégrée partout", description: "Toute notre communication renforce notre proposition de valeur." }] },
+                // 2. UX Design
+                { id: 4, axis: 'ux', question: "Votre site web est-il optimisé pour les mobiles ?", options: [ { value: 0, label: "Non", description: "Il n'est pas 'responsive'." }, { value: 1, label: "Oui, il est responsive", description: "Mais l'expérience pourrait être meilleure." }, { value: 2, label: "Mobile-first", description: "Nous concevons d'abord pour le mobile." }, { value: 3, label: "Expérience dédiée", description: "Contenu et ergonomie spécifiques au mobile." }] },
+                { id: 5, axis: 'ux', question: "La navigation et les appels à l'action (CTA) de votre site sont-ils clairs ?", options: [ { value: 0, label: "Pas vraiment", description: "Les utilisateurs se perdent souvent." }, { value: 1, label: "Assez clairs", description: "Le menu est simple, les CTA sont visibles." }, { value: 2, label: "Très clairs", description: "L'architecture est logique et les CTA sont incitatifs." }, { value: 3, label: "Testés et optimisés", description: "Nous testons l'efficacité de nos parcours et CTA." }] },
+                { id: 6, axis: 'ux', question: "Comment collectez-vous le feedback de vos utilisateurs ?", options: [ { value: 0, label: "Jamais", description: "" }, { value: 1, label: "Informellement", description: "Via les emails ou les réseaux sociaux." }, { value: 2, label: "Par des enquêtes", description: "Nous envoyons des sondages de satisfaction." }, { value: 3, label: "En continu", description: "Avec des outils de feedback et des tests utilisateurs." }] },
+                // 3. Analytics
+                { id: 7, axis: 'analytics', question: "Avez-vous installé et configuré un outil d'analyse d'audience (ex: Google Analytics 4) ?", options: [ { value: 0, label: "Non", description: "Aucun suivi de l'audience." }, { value: 1, label: "Oui, mais pas configuré", description: "Le code est installé, mais nous n'analysons rien." }, { value: 2, label: "Configuration de base", description: "Nous suivons les pages vues et les sources de trafic." }, { value: 3, label: "Configuration avancée", description: "Nous suivons les événements, conversions et cohortes." }] },
+                { id: 8, axis: 'analytics', question: "Suivez-vous des objectifs de conversion clairs ?", options: [ { value: 0, label: "Non", description: "Aucun objectif défini." }, { value: 1, label: "Objectifs de trafic", description: "Notre seul but est d'augmenter le nombre de visiteurs." }, { value: 2, label: "Objectifs de macro-conversion", description: "Nous suivons les ventes ou les formulaires de contact." }, { value: 3, label: "Micro et Macro", description: "Nous suivons aussi les étapes intermédiaires (ex: ajout au panier)." }] },
+                { id: 9, axis: 'analytics', question: "Comment les données influencent-elles vos décisions marketing ?", options: [ { value: 0, label: "Pas du tout", description: "Nous nous basons sur l'intuition." }, { value: 1, label: "Rapports mensuels", description: "Nous consultons les rapports de performance de temps en temps." }, { value: 2, label: "Suivi régulier", description: "Nous ajustons nos campagnes en fonction des résultats hebdomadaires." }, { value: 3, label: "Data-driven", description: "Toutes nos décisions stratégiques sont basées sur les données." }] },
+                // 4. SEO
+                { id: 10, axis: 'seo', question: "Quelle est votre approche de la recherche de mots-clés ?", options: [ { value: 0, label: "Aucune", description: "Nous ne faisons pas de recherche de mots-clés." }, { value: 1, label: "Ponctuelle", description: "Une analyse a été faite il y a longtemps." }, { value: 2, label: "Régulière", description: "Nous mettons à jour nos mots-clés pour les nouveaux contenus." }, { value: 3, label: "Stratégique", description: "Nous avons une veille concurrentielle et sémantique continue." }] },
+                { id: 11, axis: 'seo', question: "Comment évaluez-vous la qualité technique de votre site pour le SEO ?", options: [ { value: 0, label: "Jamais", description: "Nous n'avons aucun outil pour cela." }, { value: 1, label: "Manuellement", description: "Nous vérifions quelques points de temps en temps." }, { value: 2, label: "Avec des outils", description: "Nous utilisons la Google Search Console ou des outils similaires." }, { value: 3, label: "Audits complets", description: "Nous réalisons des audits techniques SEO réguliers." }] },
+                { id: 12, axis: 'seo', question: "Comment travaillez-vous votre popularité (backlinks) ?", options: [ { value: 0, label: "Pas du tout", description: "Nous n'avons aucune action de netlinking." }, { value: 1, label: "Naturellement", description: "Nous espérons obtenir des liens grâce à notre contenu." }, { value: 2, label: "Ponctuellement", description: "Nous menons quelques actions (annuaires, articles invités)." }, { value: 3, label: "Stratégiquement", description: "Nous avons une stratégie de netlinking proactive et continue." }] },
+                // 5. Preuve Sociale
+                { id: 13, axis: 'social_proof', question: "Encouragez-vous et collectez-vous activement les avis de vos clients ?", options: [ { value: 0, label: "Non", description: "Nous ne demandons jamais d'avis." }, { value: 1, label: "Passivement", description: "Les clients peuvent laisser des avis s'ils le souhaitent." }, { value: 2, label: "Activement", description: "Nous envoyons un email pour demander un avis après un achat." }, { value: 3, label: "Systématiquement", description: "La collecte est automatisée et nous répondons à tous les avis." }] },
+                { id: 14, axis: 'social_proof', question: "Utilisez-vous les avis et témoignages clients dans votre marketing ?", options: [ { value: 0, label: "Non", description: "" }, { value: 1, label: "Rarement", description: "Nous avons une page 'Témoignages' peu visible." }, { value: 2, label: "Régulièrement", description: "Nous intégrons les meilleurs avis sur nos pages de vente." }, { value: 3, label: "Partout", description: "Les avis sont un élément clé de notre site, nos emails et nos publicités." }] },
+                { id: 15, axis: 'social_proof', question: "Avez-vous un programme pour transformer vos clients en ambassadeurs ?", options: [ { value: 0, label: "Non", description: "Aucun programme de ce type." }, { value: 1, label: "Informel", description: "Nous comptons sur le bouche-à-oreille naturel." }, { value: 2, label: "Programme de parrainage", description: "Nous offrons une récompense pour les recommandations." }, { value: 3, label: "Programme d'affiliation", description: "Nous avons un système structuré pour nos partenaires." }] },
+                // 6. E-mailing
+                { id: 16, axis: 'email', question: "Comment collectez-vous de nouveaux contacts emails ?", options: [ { value: 0, label: "Pas de collecte", description: "" }, { value: 1, label: "Formulaire simple", description: "Un formulaire de contact ou d'inscription newsletter." }, { value: 2, label: "Ressources à télécharger", description: "Nous offrons un e-book, un webinaire, etc." }, { value: 3, label: "Multiple et optimisé", description: "Pop-ups, formulaires embarqués, jeux-concours, etc." }] },
+                { id: 17, axis: 'email', question: "Comment segmentez-vous vos listes d'emails ?", options: [ { value: 0, label: "Pas de segmentation", description: "Nous envoyons le même email à tout le monde." }, { value: 1, label: "Basique", description: "Par type de client (prospect vs client)." }, { value: 2, label: "Comportementale", description: "Basée sur les achats ou les visites du site." }, { value: 3, label: "Avancée", description: "Segmentation dynamique basée sur de multiples critères." }] },
+                { id: 18, axis: 'email', question: "Utilisez-vous l'A/B testing pour vos campagnes email ?", options: [ { value: 0, label: "Jamais", description: "" }, { value: 1, label: "Sur les objets", description: "Pour améliorer le taux d'ouverture." }, { value: 2, label: "Sur le contenu", description: "Pour améliorer le taux de clic." }, { value: 3, label: "De manière systématique", description: "Nous testons objets, contenus et CTA en continu." }] },
+                // 7. Social Media
+                { id: 19, axis: 'social', question: "Votre stratégie sur les réseaux sociaux est-elle planifiée ?", options: [ { value: 0, label: "Pas de stratégie", description: "Nous publions au jour le jour." }, { value: 1, label: "Planification simple", description: "Nous avons une idée des thèmes à aborder." }, { value: 2, label: "Calendrier éditorial", description: "Nous planifions nos publications sur plusieurs semaines." }, { value: 3, label: "Stratégie intégrée", description: "Le calendrier est lié à nos objectifs marketing globaux." }] },
+                { id: 20, axis: 'social', question: "Comment interagissez-vous avec votre communauté ?", options: [ { value: 0, label: "Très peu", description: "Nous ne répondons pas ou rarement." }, { value: 1, label: "Réactivement", description: "Nous répondons aux questions et commentaires." }, { value: 2, label: "Proactivement", description: "Nous lançons des conversations et des sondages." }, { value: 3, label: "Community Management", description: "Nous animons et modérons activement notre communauté." }] },
+                { id: 21, axis: 'social', question: "Utilisez-vous la publicité sur les réseaux sociaux (Social Ads) ?", options: [ { value: 0, label: "Non", description: "Nous comptons uniquement sur le bio." }, { value: 1, label: "Boost de posts", description: "Nous sponsorisons nos meilleures publications." }, { value: 2, label: "Campagnes ciblées", description: "Nous créons des campagnes avec des audiences précises." }, { value: 3, label: "Retargeting et Lookalike", description: "Nous utilisons des stratégies publicitaires avancées." }] },
+                // 8. SEA
+                { id: 22, axis: 'sea', question: "Gérez-vous des campagnes de publicité payante (Google Ads, Social Ads) ?", options: [ { value: 0, label: "Non, aucune", description: "Nous n'utilisons pas la publicité payante." }, { value: 1, label: "Occasionnellement", description: "Nous sponsorisons quelques posts ou campagnes ponctuelles." }, { value: 2, label: "Régulièrement", description: "Nous avons des campagnes actives en continu." }, { value: 3, label: "De manière optimisée", description: "Nos campagnes sont pilotées par le ROI et l'A/B testing." }] },
+                { id: 23, axis: 'sea', question: "Comment mesurez-vous le retour sur investissement (ROI) de vos publicités ?", options: [ { value: 0, label: "Pas de mesure", description: "Nous ne suivons pas les conversions." }, { value: 1, label: "Partiellement", description: "Nous suivons les clics et le coût, mais pas les ventes." }, { value: 2, label: "Suivi des conversions", description: "Nous suivons les conversions (ventes, leads) par campagne." }, { value: 3, label: "Attribution avancée", description: "Nous utilisons un modèle d'attribution pour évaluer chaque canal." }] },
+                { id: 24, axis: 'sea', question: "Vos pages de destination (landing pages) sont-elles optimisées pour la conversion ?", options: [ { value: 0, label: "Non dédiées", description: "Nous renvoyons vers la page d'accueil." }, { value: 1, label: "Pages de base", description: "Nous avons des pages de destination, mais non optimisées." }, { value: 2, label: "Optimisées", description: "Les pages sont claires, avec un appel à l'action unique." }, { value: 3, label: "Testées et optimisées", description: "Nous A/B testons régulièrement nos landing pages." }] },
+                // 9. E-commerce
+                { id: 25, axis: 'ecommerce', question: "Vos fiches produits sont-elles optimisées pour la vente ?", options: [ { value: 0, label: "Pas d'e-commerce", description: "" }, { value: 1, label: "Basiques", description: "Titre, prix et une photo." }, { value: 2, label: "Détaillées", description: "Multiples photos, descriptions complètes, caractéristiques." }, { value: 3, label: "Enrichies", description: "Avec des avis clients, des vidéos, des FAQs." }] },
+                { id: 26, axis: 'ecommerce', question: "Le processus de paiement est-il simple et rapide ?", options: [ { value: 0, label: "Pas d'e-commerce", description: "" }, { value: 1, label: "Complexe", description: "Plusieurs pages, beaucoup de champs à remplir." }, { value: 2, label: "Standard", description: "Un processus de paiement classique en plusieurs étapes." }, { value: 3, label: "Optimisé", description: "Paiement en une page, options de paiement rapide (Paypal, etc.)." }] },
+                { id: 27, axis: 'ecommerce', question: "Quelle est votre stratégie pour les paniers abandonnés ?", options: [ { value: 0, label: "Pas d'e-commerce", description: "" }, { value: 1, label: "Aucune", description: "Nous ne faisons rien de spécifique." }, { value: 2, label: "Relance simple", description: "Nous envoyons un email de relance unique." }, { value: 3, label: "Séquence de relance", description: "Nous avons une séquence d'emails automatisée et personnalisée." }] },
+                // 10. Automation
+                { id: 28, axis: 'automation', question: "Utilisez-vous des scénarios de marketing automation ?", options: [ { value: 0, label: "Non", description: "Toutes nos actions sont manuelles." }, { value: 1, label: "Pour les bases", description: "Email de bienvenue, confirmation de commande." }, { value: 2, label: "Pour le nurturing", description: "Séquences d'emails pour éduquer les prospects." }, { value: 3, label: "Pour tout le cycle", description: "Du premier contact à la fidélisation post-achat." }] },
+                { id: 29, axis: 'automation', question: "Comment qualifiez-vous et assignez-vous les leads entrants ?", options: [ { value: 0, label: "Manuellement", description: "Un commercial traite chaque nouveau contact." }, { value: 1, label: "Tri par formulaire", description: "Les contacts sont triés selon le formulaire rempli." }, { value: 2, label: "Lead Scoring", description: "Nous attribuons des points en fonction des actions." }, { value: 3, label: "Automatisé", description: "Le scoring et l'assignation aux commerciaux sont automatiques." }] },
+                { id: 30, axis: 'automation', question: "Vos outils marketing sont-ils intégrés entre eux ?", options: [ { value: 0, label: "Pas d'intégration", description: "Outils isolés." }, { value: 1, label: "Quelques connexions", description: "Intégrations ponctuelles (ex: Zapier)." }, { value: 2, label: "Écosystème connecté", description: "Principaux outils intégrés nativement." }, { value: 3, label: "Plateforme unifiée", description: "Tous les outils sont synchronisés dans un CRM/CDP." }] },
+                // 11. IA
+                { id: 31, axis: 'ai', question: "Utilisez-vous l'IA pour la création de contenu ?", options: [ { value: 0, label: "Non", description: "Toute la création est manuelle." }, { value: 1, label: "Pour l'inspiration", description: "Génération d'idées de titres ou de plans." }, { value: 2, label: "Pour la rédaction", description: "Aide à la rédaction de brouillons d'articles ou de posts." }, { value: 3, label: "Pour l'optimisation", description: "L'IA nous aide à optimiser le SEO de nos contenus." }] },
+                { id: 32, axis: 'ai', question: "L'IA est-elle utilisée pour personnaliser l'expérience client ?", options: [ { value: 0, label: "Non", description: "" }, { value: 1, label: "De manière simple", description: "Ex: un chatbot qui répond aux questions fréquentes." }, { value: 2, label: "De manière ciblée", description: "Ex: recommandations de produits personnalisées." }, { value: 3, label: "De manière prédictive", description: "L'IA anticipe les besoins des clients pour adapter le site." }] },
+                { id: 33, axis: 'ai', question: "Comment l'IA optimise-t-elle vos campagnes publicitaires ?", options: [ { value: 0, label: "Pas du tout", description: "" }, { value: 1, label: "Via les plateformes", description: "Nous utilisons les optimisations natives de Google/Meta." }, { value: 2, label: "Pour les audiences", description: "Création d'audiences similaires (lookalike)." }, { value: 3, label: "Pilotage complet", description: "L'IA gère l'allocation de budget et les enchères en temps réel." }] },
+                // 12. RGPD
+                { id: 34, axis: 'rgpd', question: "Comment gérez-vous le consentement des utilisateurs (cookies, etc.) ?", options: [ { value: 0, label: "Pas de gestion", description: "Nous ne demandons pas le consentement." }, { value: 1, label: "Bannière simple", description: "Un simple bandeau 'Accepter'." }, { value: 2, label: "Avec choix", description: "Les utilisateurs peuvent accepter ou refuser." }, { value: 3, label: "Gestion granulaire", description: "Choix par finalité et preuve de consentement." }] },
+                { id: 35, axis: 'rgpd', question: "Vos formulaires et collectes de données sont-ils conformes au RGPD ?", options: [ { value: 0, label: "Nous ne savons pas", description: "" }, { value: 1, label: "Partiellement", description: "Nous avons ajouté des cases à cocher." }, { value: 2, label: "Oui, en surface", description: "Les finalités sont indiquées clairement." }, { value: 3, label: "Totalement", description: "Consentement, durée de conservation et sécurité sont maîtrisés." }] },
+                { id: 36, axis: 'rgpd', question: "Avez-vous un processus clair pour gérer les demandes des utilisateurs (accès, suppression) ?", options: [ { value: 0, label: "Non", description: "" }, { value: 1, label: "Au cas par cas", description: "Nous traitons les demandes quand elles arrivent." }, { value: 2, label: "Processus défini", description: "Nous avons une procédure interne documentée." }, { value: 3, label: "Processus outillé", description: "Nous avons un portail ou un outil pour gérer ces demandes." }] }
+            ];
+            
+            APP_CONFIG.totalQuestions = QUIZ_QUESTIONS.length;
+            let currentQuestionIndex = 0;
+            let userAnswers = {};
+            let quizResults = null;
+            let lightRadarChart = null;
+
+            const dom = {
+                axesGrid: document.getElementById('axes-grid'),
+                quiz: {
+                    progressFill: document.getElementById('progress-fill'),
+                    progressText: document.getElementById('progress-text'),
+                    questionText: document.getElementById('question-text'),
+                    optionsContainer: document.getElementById('question-options'),
+                    categoryDisplay: document.getElementById('question-category-display'),
+                    homeBtn: document.getElementById('home-btn'),
+                    prevBtn: document.getElementById('prev-btn'),
+                    skipBtn: document.getElementById('skip-btn')
+                },
+                lightResults: {
+                    score: document.getElementById('light-overall-score'),
+                    level: document.getElementById('light-maturity-level'),
+                    chart: document.getElementById('light-radar-chart'),
+                    recommendations: document.getElementById('light-recommendations')
+                },
+                 fullReport: {
+                    content: document.getElementById('full-report-content'),
+                    recommendations: document.getElementById('full-recommendations')
+                },
+                modal: { self: document.getElementById('lead-modal'), form: document.getElementById('lead-form') }
+            };
+            
+            function showScreen(screenId) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(screenId).classList.add('active');
+            }
+            
+            function getMaturityLevel(percentage) {
+                for (const level of Object.values(APP_CONFIG.maturityLevels)) {
+                    if (percentage >= level.min && percentage <= level.max) return level;
+                } return APP_CONFIG.maturityLevels.beginner;
+            }
+            
+            window.startQuiz = () => { currentQuestionIndex = 0; userAnswers = {}; showScreen('quiz-screen'); displayQuestion(); };
+            window.goHome = () => showScreen('home-screen');
+            window.showDemo = () => { QUIZ_QUESTIONS.forEach(q => { userAnswers[q.id] = Math.floor(Math.random() * q.options.length); }); calculateAndShowLightResults(); };
+
+            function displayQuestion() {
+                const question = QUIZ_QUESTIONS[currentQuestionIndex];
+                const axisInfo = APP_CONFIG.axes.find(a => a.id === question.axis);
+
+                dom.quiz.progressFill.style.width = `${((currentQuestionIndex + 1) / APP_CONFIG.totalQuestions) * 100}%`;
+                dom.quiz.progressText.textContent = `Question ${currentQuestionIndex + 1} / ${APP_CONFIG.totalQuestions}`;
+                dom.quiz.categoryDisplay.innerHTML = `${axisInfo.icon} ${axisInfo.name}`;
+                dom.quiz.questionText.textContent = question.question;
+                
+                dom.quiz.optionsContainer.innerHTML = '';
+                question.options.forEach((opt, index) => {
+                    const optEl = document.createElement('div');
+                    optEl.className = 'option';
+                    if (userAnswers[question.id] === index) optEl.classList.add('selected');
+                    optEl.innerHTML = `<div class="option-label">${opt.label}</div>${opt.description ? `<div class="option-description">${opt.description}</div>` : ''}`;
+                    optEl.onclick = () => selectOption(index);
+                    dom.quiz.optionsContainer.appendChild(optEl);
+                });
+                updateNavButtons();
+            }
+            
+            function selectOption(index) {
+                userAnswers[QUIZ_QUESTIONS[currentQuestionIndex].id] = index;
+                setTimeout(() => {
+                    if (currentQuestionIndex < APP_CONFIG.totalQuestions - 1) {
+                        currentQuestionIndex++;
+                        displayQuestion();
+                    } else {
+                        calculateAndShowLightResults();
+                    }
+                }, 200);
+                displayQuestion();
+            }
+            
+            window.previousQuestion = () => { if (currentQuestionIndex > 0) { currentQuestionIndex--; displayQuestion(); } };
+            
+            window.skipTheme = () => {
+                const currentAxis = QUIZ_QUESTIONS[currentQuestionIndex].axis;
+                let nextIndex = currentQuestionIndex;
+
+                while(nextIndex < APP_CONFIG.totalQuestions && QUIZ_QUESTIONS[nextIndex].axis === currentAxis) {
+                    userAnswers[QUIZ_QUESTIONS[nextIndex].id] = 'skipped';
+                    nextIndex++;
+                }
+
+                if (nextIndex < APP_CONFIG.totalQuestions) {
+                    currentQuestionIndex = nextIndex;
+                    displayQuestion();
+                } else {
+                    calculateAndShowLightResults();
+                }
+            };
+            
+            function updateNavButtons() {
+                dom.quiz.prevBtn.style.display = currentQuestionIndex > 0 ? 'inline-flex' : 'none';
+                dom.quiz.homeBtn.style.display = currentQuestionIndex === 0 ? 'inline-flex' : 'none';
+            }
+            
+            function calculateScores() {
+                const axesScores = {}, axesQuestions = {};
+                APP_CONFIG.axes.forEach(a => { axesScores[a.id] = 0; axesQuestions[a.id] = 0; });
+
+                QUIZ_QUESTIONS.forEach(q => {
+                    const answerIndex = userAnswers[q.id];
+                    if (answerIndex !== undefined && answerIndex !== 'skipped') {
+                        axesScores[q.axis] += q.options[answerIndex].value;
+                        axesQuestions[q.axis]++;
+                    }
+                });
+
+                const axesPercentages = {};
+                APP_CONFIG.axes.forEach(a => {
+                    const maxScore = axesQuestions[a.id] * 3;
+                    axesPercentages[a.id] = maxScore > 0 ? Math.round((axesScores[a.id] / maxScore) * 100) : 0;
+                });
+
+                const totalScore = Object.values(axesScores).reduce((s, c) => s + c, 0);
+                const totalAnsweredQuestions = Object.values(axesQuestions).reduce((s, c) => s + c, 0);
+                const maxTotalScore = totalAnsweredQuestions * 3;
+
+                const globalPercentage = maxTotalScore > 0 ? Math.round((totalScore / maxTotalScore) * 100) : 0;
+
+                quizResults = { globalPercentage, axesPercentages, maturityLevel: getMaturityLevel(globalPercentage) };
+            }
+
+            async function calculateAndShowLightResults() {
+                showScreen('light-results-screen');
+                dom.lightResults.recommendations.innerHTML = `<div class="loader"><div class="loader-spinner"></div><p>Analyse IA en cours...</p></div>`;
+                
+                calculateScores();
+                
+                dom.lightResults.score.textContent = `${quizResults.globalPercentage}%`;
+                dom.lightResults.level.textContent = quizResults.maturityLevel.label;
+                createLightRadarChart();
+
+                const prompt = `Analyse ce score global de maturité marketing: ${quizResults.globalPercentage}%. Rédige un court paragraphe (2-3 phrases) encourageant pour résumer ce que ce score signifie.`;
+                const summary = await generateAIResponse(prompt);
+                dom.lightResults.recommendations.innerHTML = `<p>${summary}</p>`;
+            }
+            
+            function createLightRadarChart() {
+                if (lightRadarChart) lightRadarChart.destroy();
+                const ctx = dom.lightResults.chart.getContext('2d');
+                lightRadarChart = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: APP_CONFIG.axes.map(a => a.name),
+                        datasets: [{
+                            label: 'Votre score',
+                            data: APP_CONFIG.axes.map(a => quizResults.axesPercentages[a.id]),
+                            backgroundColor: 'rgba(33, 128, 141, 0.2)',
+                            borderColor: 'rgba(33, 128, 141, 1)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100, pointLabels: { font: { size: 12 } } } }, plugins: { legend: { display: false } } }
+                });
+            }
+
+            async function generateAndShowFullReport(sector) {
+                 showScreen('full-report-screen');
+                 dom.fullReport.recommendations.innerHTML = `<div class="loader"><div class="loader-spinner"></div><p>Génération de votre rapport complet...</p></div>`;
+
+                const answeredQuestions = QUIZ_QUESTIONS.filter(q => userAnswers[q.id] !== 'skipped');
+                const userSummary = answeredQuestions.map(q => `- ${q.question}: ${q.options[userAnswers[q.id]]?.label || "Non répondu"}`).join('\n');
+                const skippedAxes = APP_CONFIG.axes.filter(axis => answeredQuestions.every(q => q.axis !== axis.id)).map(a => a.name);
+
+                let sectorInfo = sector ? `L'utilisateur a indiqué que son secteur d'activité est : ${sector}. Adapte tes recommandations à ce secteur.` : "Le secteur n'a pas été spécifié.";
+                if(skippedAxes.length > 0) {
+                    sectorInfo += ` Ne fais aucune analyse ni recommandation sur les thématiques suivantes car elles ont été sautées: ${skippedAxes.join(', ')}.`;
+                }
+
+                const prompt = `
+                    En tant que consultant expert en marketing digital, analyse le diagnostic suivant et fournis une réponse structurée en HTML.
+                    Utilise un ton professionnel, encourageant et concret.
+                    ${sectorInfo}
+
+                    Informations du diagnostic:
+                    - Score Global: ${quizResults.globalPercentage}%
+                    - Scores par Axe: ${JSON.stringify(quizResults.axesPercentages)}
+                    - Réponses détaillées:
+                    ${userSummary}
+
+                    Structure ta réponse comme suit, en utilisant des balises HTML (h3, h4, p, ul, li, strong, em):
+                    
+                    <h3>Analyse Globale de votre Maturité (${quizResults.maturityLevel.label})</h3>
+                    <p>Donne une appréciation globale du profil marketing en fonction du score. Mets en perspective le niveau de maturité et sois encourageant.</p>
+                    
+                    <h3>✅ Vos Points Forts</h3>
+                    <p>Identifie 2 domaines où l'utilisateur semble avoir une bonne maturité. Explique brièvement pourquoi c'est une force.</p>
+                    
+                    <h3>🎯 Axes d'Amélioration Prioritaires</h3>
+                    <p>Identifie les 2 ou 3 axes les plus faibles (parmi les axes non sautés). Pour chaque axe, explique pourquoi il est crucial de l'améliorer.</p>
+                    
+                    <h3>🚀 Plan d'Action Recommandé</h3>
+                    <p>Fournis une liste de 3 actions concrètes et priorisées. Pour chaque action, donne une explication claire et suggère un outil ou une méthode simple pour commencer. Numérote les actions.</p>
+                `;
+                const fullReportHtml = await generateAIResponse(prompt);
+                dom.fullReport.recommendations.innerHTML = fullReportHtml;
+            }
+
+            async function generateAIResponse(prompt) {
+                try {
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0) {
+                        // Clean up the markdown code blocks from the response
+                        let text = result.candidates[0].content.parts[0].text;
+                        text = text.replace(/^```html\s*/, '').replace(/```\s*$/, '');
+                        return text;
+                    } throw new Error("Invalid AI response");
+                } catch (error) {
+                    console.error("AI Error:", error);
+                    return "<p>Désolé, une erreur est survenue lors de la génération de l'analyse IA. Veuillez réessayer.</p>";
+                }
+            }
+
+            window.showLeadForm = () => dom.modal.self.classList.add('active');
+            window.closeLeadForm = () => dom.modal.self.classList.remove('active');
+            
+            window.submitLeadForm = async (event) => {
+                event.preventDefault();
+                const firstname = document.getElementById('firstname').value;
+                const email = document.getElementById('email').value;
+                const company = document.getElementById('company').value;
+                const sector = document.getElementById('sector').value;
+                const leadData = { firstname, email, company, sector, score: quizResults.globalPercentage, date: new Date().toISOString() };
+                
+                // --- Début de l'explication pour la collecte des données ---
+                // Pour envoyer ces données, la méthode recommandée est d'utiliser un Webhook.
+                // Google Sheets + Apps Script est une solution gratuite et puissante.
+                // 1. Créez une nouvelle Google Sheet.
+                // 2. Allez dans Extensions > Apps Script.
+                // 3. Collez le code suivant dans l'éditeur de script et enregistrez :
+                /*
+                function doPost(e) {
+                  try {
+                    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+                    // Si la feuille est vide, ajoutez les en-têtes
+                    if (sheet.getLastRow() === 0) {
+                      sheet.appendRow(["Date", "Prénom", "Email", "Entreprise", "Secteur", "Score"]);
+                    }
+                    var data = JSON.parse(e.postData.contents);
+                    sheet.appendRow([data.date, data.firstname, data.email, data.company, data.sector, data.score]);
+                    return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
+                  } catch (error) {
+                    return ContentService.createTextOutput(JSON.stringify({result: "error", error: error.toString()})).setMimeType(ContentService.MimeType.JSON);
+                  }
+                }
+                */
+                // 4. Cliquez sur "Déployer" > "Nouveau déploiement".
+                // 5. Choisissez "Application Web" comme type. Donnez une description.
+                // 6. Dans "Qui a accès", sélectionnez "Tout le monde".
+                // 7. Cliquez sur "Déployer". Autorisez l'accès à votre compte Google.
+                // 8. Copiez l'URL de l'application Web fournie. C'est votre URL de webhook.
+                // --- Fin de l'explication ---
+                
+                const webhookUrl = 'https://script.google.com/macros/s/AKfycbz-I1LNPt2T0n_yP3C6FDakWXaC3GfHeLtrzd1lORbdI1vPqUWvyVlMul581fV6OhBX5w/exec'; // <-- COLLEZ VOTRE URL DE WEBHOOK ICI
+                if (webhookUrl) {
+                    try {
+                        await fetch(webhookUrl, {
+                            method: 'POST',
+                            mode: 'no-cors', // Important for simple Google Apps Script webhooks
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(leadData)
+                        });
+                    } catch (e) { console.error("Erreur lors de l'envoi au webhook:", e); }
+                } else {
+                     console.log("Données du prospect (non envoyées car pas de webhook configuré):", leadData);
+                }
+
+                closeLeadForm();
+                await generateAndShowFullReport(sector);
+            };
+
+             window.downloadPDF = () => {
+                const { jsPDF } = window.jspdf;
+                const reportElement = dom.fullReport.content;
+                const pdf = new jsPDF('p', 'pt', 'a4');
+                
+                html2canvas(reportElement, { 
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff' // Set a white background to avoid transparent issues
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                    let position = 0;
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    
+                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+                    let heightLeft = pdfHeight - pageHeight;
+                    
+                    while (heightLeft >= 0) {
+                      position = heightLeft - pdfHeight;
+                      pdf.addPage();
+                      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+                      heightLeft -= pageHeight;
+                    }
+                    pdf.save('diagnostic-owl-score.pdf');
+                });
+            };
+            
+            window.restartQuiz = () => { if (lightRadarChart) lightRadarChart.destroy(); showScreen('home-screen'); };
+
+            function initHomeScreen() {
+                const grid = dom.axesGrid;
+                grid.innerHTML = '';
+                APP_CONFIG.axes.forEach(axis => {
+                    const item = document.createElement('div');
+                    item.className = 'axis-item';
+                    item.textContent = `${axis.icon} ${axis.name}`;
+                    grid.appendChild(item);
+                });
+                showScreen('home-screen');
+            }
+
+            initHomeScreen();
+        });
+    </script>
+</body>
+</html>
