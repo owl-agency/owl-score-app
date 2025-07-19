@@ -524,25 +524,36 @@
             }
 
             async function generateAIResponse(prompt) {
-                try {
-                    let chatHistory = [];
-                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-                    const payload = { contents: chatHistory };
-                    const apiKey = "";
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    const result = await response.json();
-                    if (result.candidates && result.candidates.length > 0) {
-                        // Clean up the markdown code blocks from the response
-                        let text = result.candidates[0].content.parts[0].text;
-                        text = text.replace(/^```html\s*/, '').replace(/```\s*$/, '');
-                        return text;
-                    } throw new Error("Invalid AI response");
-                } catch (error) {
-                    console.error("AI Error:", error);
-                    return "<p>Désolé, une erreur est survenue lors de la génération de l'analyse IA. Veuillez réessayer.</p>";
-                }
-            }
+    try {
+        // L'URL relative vers votre fonction Netlify sécurisée
+        const functionUrl = '/.netlify/functions/generate-analysis';
+
+        const response = await fetch(functionUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: prompt })
+        });
+
+        if (!response.ok) {
+            // Si la fonction Netlify elle-même renvoie une erreur (ex: 500)
+            throw new Error(`Erreur de la fonction Netlify: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        if (result.candidates && result.candidates.length > 0) {
+            let text = result.candidates[0].content.parts[0].text;
+            text = text.replace(/^```html\s*/, '').replace(/```\s*$/, '');
+            return text;
+        }
+        // Si la fonction Netlify renvoie une réponse mais sans le contenu attendu
+        throw new Error("Réponse IA invalide depuis la fonction Netlify");
+
+    } catch (error) {
+        console.error("Erreur lors de l'appel à la fonction Netlify:", error);
+        return "<p>Désolé, une erreur est survenue lors de la génération de l'analyse IA. Veuillez réessayer.</p>";
+    }
+}
 
             window.showLeadForm = () => dom.modal.self.classList.add('active');
             window.closeLeadForm = () => dom.modal.self.classList.remove('active');
