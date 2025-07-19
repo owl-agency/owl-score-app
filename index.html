@@ -45,6 +45,11 @@
             --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.05), 0 5px 10px rgba(0, 0, 0, 0.02);
         }
 
+        /* Correction pour le débordement des champs de formulaire */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: var(--font-family-base);
             background-color: var(--color-background);
