@@ -577,33 +577,24 @@ window.submitLeadForm = async (event) => {
     const company = document.getElementById('company').value;
 
     const leadData = { 
-        firstname, 
-        email, 
-        company, 
-        sector, 
+        firstname, email, company, sector, 
         score: quizResults.globalPercentage,
         userAnswers: JSON.stringify(userAnswers), // On convertit les réponses en texte JSON
         aiAnalysis: aiAnalysisHtml // On ajoute l'analyse IA
     };
 
-    // 3. On envoie les données au webhook
-    const webhookUrl = 'https://script.google.com/macros/s/AKfycbz-I1LNPt2T0n_yP3C6FDakWXaC3GfHeLtrzd1lORbdI1vPqUWvyVlMul581fV6OhBX5w/exec'; // <-- VÉRIFIEZ QUE C'EST BIEN VOTRE URL
-    if (webhookUrl && webhookUrl.includes('script.google.com')) {
-        try {
-            await fetch(webhookUrl, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(leadData)
-            });
-        } catch (e) { 
-            console.error("Erreur lors de l'envoi au webhook:", e); 
-        }
-    } else {
-         console.log("Données du prospect (non envoyées car pas de webhook configuré):", leadData);
+    // On appelle notre nouvelle fonction Netlify sécurisée
+    const functionUrl = '/.netlify/functions/submit-form';
+    try {
+        await fetch(functionUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(leadData)
+        });
+    } catch (e) { 
+        console.error("Erreur lors de l'appel à la fonction submit-form:", e); 
     }
 };
-
 
 
              window.downloadPDF = () => {
