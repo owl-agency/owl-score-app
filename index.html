@@ -462,7 +462,12 @@
                 dom.lightResults.level.textContent = quizResults.maturityLevel.label;
                 createLightRadarChart();
 
-                const prompt = `Analyse ce score global de maturité marketing: ${quizResults.globalPercentage}%. Rédige un court paragraphe (2-3 phrases) encourageant pour résumer ce que ce score signifie.`;
+                const prompt = `En tant que consultant senior pour Owl Agency, une agence spécialisée dans la stratégie marketing digitale, analyse le score suivant.
+Notre ton est sage, pédagogue et encourageant.
+
+Le score global de maturité marketing d'un prospect est de ${quizResults.globalPercentage}%.
+
+Rédige un court paragraphe (2-3 phrases maximum) qui interprète ce score. Commence par une phrase positive, explique brièvement ce que ce niveau de maturité implique, et termine par une note encourageante sur le potentiel de croissance.`;
                 const summary = await generateAIResponse(prompt);
                 dom.lightResults.recommendations.innerHTML = `<p>${summary}</p>`;
             }
@@ -500,29 +505,34 @@
     }
 
     const prompt = `
-        En tant que consultant expert en marketing digital, analyse le diagnostic suivant et fournis une réponse structurée en HTML.
-        Utilise un ton professionnel, encourageant et concret.
-        ${sectorInfo}
+**Persona & Ton:**
+Tu es un consultant stratégique senior pour Owl Agency. Ton ton est celui d'un expert sage, pédagogue et visionnaire. Tu ne te contentes pas de lister des faits, tu offres des perspectives et des conseils stratégiques clairs. Tu es rassurant et tu donnes au prospect une vision claire des prochaines étapes. Utilise quelques emojis pour rendre le contenu plus visuel et engageant.
 
-        Informations du diagnostic:
-        - Score Global: ${quizResults.globalPercentage}%
-        - Scores par Axe: ${JSON.stringify(quizResults.axesPercentages)}
-        - Réponses détaillées:
-        ${userSummary}
+**Contexte du Diagnostic:**
+Voici les résultats du diagnostic de maturité digitale d'un prospect :
+- Secteur d'activité : ${sectorInfo}
+- Score Global : ${quizResults.globalPercentage}% (${quizResults.maturityLevel.label})
+- Scores par Axe : ${JSON.stringify(quizResults.axesPercentages)}
+- Réponses détaillées aux questions :
+${userSummary}
 
-        Structure ta réponse comme suit, en utilisant des balises HTML (h3, h4, p, ul, li, strong, em):
+**Tâche & Format:**
+Rédige une analyse complète et détaillée en HTML. Respecte scrupuleusement la structure suivante :
 
-        <h3>Analyse Globale de votre Maturité (${quizResults.maturityLevel.label})</h3>
-        <p>Donne une appréciation globale du profil marketing en fonction du score. Mets en perspective le niveau de maturité et sois encourageant.</p>
+<h3>Analyse Globale : Votre Vision à 360° 🦉</h3>
+<p>Rédige un paragraphe d'introduction (3-4 phrases). Commence par féliciter le prospect pour sa démarche. Interprète son score global et son niveau de maturité en termes d'opportunités. Explique que ce diagnostic est le point de départ d'une stratégie de croissance réfléchie.</p>
 
-        <h3>✅ Vos Points Forts</h3>
-        <p>Identifie 2 domaines où l'utilisateur semble avoir une bonne maturité. Explique brièvement pourquoi c'est une force.</p>
+<h3>✅ Vos Fondations Solides : Ce qui fonctionne déjà très bien</h3>
+<p>Identifie les 2 axes avec les scores les plus élevés. Pour chaque axe, crée un sous-titre <h4>. Explique en 2 phrases pourquoi c'est une force stratégique et comment capitaliser dessus. Sois spécifique en te basant sur les réponses du quiz si possible.</p>
 
-        <h3>🎯 Axes d'Amélioration Prioritaires</h3>
-        <p>Identifie les 2 ou 3 axes les plus faibles (parmi les axes non sautés). Pour chaque axe, explique pourquoi il est crucial de l'améliorer.</p>
+<h3>🎯 Vos Chantiers Prioritaires : Là où se trouve le plus grand potentiel</h3>
+<p>Identifie les 2 ou 3 axes avec les scores les plus faibles (parmi les axes non sautés). Pour chaque axe, crée un sous-titre <h4>. Explique en 2 phrases pourquoi l'amélioration de cet axe est cruciale pour sa croissance future, surtout en lien avec son secteur d'activité.</p>
 
-        <h3>🚀 Plan d'Action Recommandé</h3>
-        <p>Fournis une liste de 3 actions concrètes et priorisées. Pour chaque action, donne une explication claire et suggère un outil ou une méthode simple pour commencer. Numérote les actions.</p>
+<h3>🚀 Votre Plan d'Action "Premiers Pas"</h3>
+<p>Propose une liste ordonnée (<ol>) de 3 actions concrètes, simples et à fort impact que le prospect peut mettre en place dès demain. Pour chaque point (<li>), mets le titre de l'action en <strong>, puis explique en 2-3 phrases la méthode, en suggérant un outil simple (si pertinent) et le bénéfice attendu. Ces actions doivent être directement liées aux axes d'amélioration identifiés.</p>
+
+<h3>Conclusion : Et maintenant ?</h3>
+<p>Termine par un court paragraphe encourageant qui invite le prospect à voir ce rapport comme une feuille de route. Fais une transition subtile vers une prise de contact avec Owl Agency pour discuter d'une stratégie personnalisée.</p>
     `;
     const fullReportHtml = await generateAIResponse(prompt);
     dom.fullReport.recommendations.innerHTML = fullReportHtml;
