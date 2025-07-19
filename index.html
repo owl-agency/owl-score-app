@@ -482,46 +482,49 @@
             }
 
             async function generateAndShowFullReport(sector) {
-                 showScreen('full-report-screen');
-                 dom.fullReport.recommendations.innerHTML = `<div class="loader"><div class="loader-spinner"></div><p>Génération de votre rapport complet...</p></div>`;
+     showScreen('full-report-screen');
+     dom.fullReport.recommendations.innerHTML = `<div class="loader"><div class="loader-spinner"></div><p>Génération de votre rapport complet...</p></div>`;
 
-                const answeredQuestions = QUIZ_QUESTIONS.filter(q => userAnswers[q.id] !== 'skipped');
-                const userSummary = answeredQuestions.map(q => `- ${q.question}: ${q.options[userAnswers[q.id]]?.label || "Non répondu"}`).join('\n');
-                const skippedAxes = APP_CONFIG.axes.filter(axis => answeredQuestions.every(q => q.axis !== axis.id)).map(a => a.name);
+    const answeredQuestions = QUIZ_QUESTIONS.filter(q => userAnswers[q.id] !== 'skipped');
+    const userSummary = answeredQuestions.map(q => `- ${q.question}: ${q.options[userAnswers[q.id]]?.label || "Non répondu"}`).join('\n');
+    const skippedAxes = APP_CONFIG.axes.filter(axis => answeredQuestions.every(q => q.axis !== axis.id)).map(a => a.name);
 
-                let sectorInfo = sector ? `L'utilisateur a indiqué que son secteur d'activité est : ${sector}. Adapte tes recommandations à ce secteur.` : "Le secteur n'a pas été spécifié.";
-                if(skippedAxes.length > 0) {
-                    sectorInfo += ` Ne fais aucune analyse ni recommandation sur les thématiques suivantes car elles ont été sautées: ${skippedAxes.join(', ')}.`;
-                }
+    let sectorInfo = sector ? `L'utilisateur a indiqué que son secteur d'activité est : ${sector}. Adapte tes recommandations à ce secteur.` : "Le secteur n'a pas été spécifié.";
+    if(skippedAxes.length > 0) {
+        sectorInfo += ` Ne fais aucune analyse ni recommandation sur les thématiques suivantes car elles ont été sautées: ${skippedAxes.join(', ')}.`;
+    }
 
-                const prompt = `
-                    En tant que consultant expert en marketing digital, analyse le diagnostic suivant et fournis une réponse structurée en HTML.
-                    Utilise un ton professionnel, encourageant et concret.
-                    ${sectorInfo}
+    const prompt = `
+        En tant que consultant expert en marketing digital, analyse le diagnostic suivant et fournis une réponse structurée en HTML.
+        Utilise un ton professionnel, encourageant et concret.
+        ${sectorInfo}
 
-                    Informations du diagnostic:
-                    - Score Global: ${quizResults.globalPercentage}%
-                    - Scores par Axe: ${JSON.stringify(quizResults.axesPercentages)}
-                    - Réponses détaillées:
-                    ${userSummary}
+        Informations du diagnostic:
+        - Score Global: ${quizResults.globalPercentage}%
+        - Scores par Axe: ${JSON.stringify(quizResults.axesPercentages)}
+        - Réponses détaillées:
+        ${userSummary}
 
-                    Structure ta réponse comme suit, en utilisant des balises HTML (h3, h4, p, ul, li, strong, em):
-                    
-                    <h3>Analyse Globale de votre Maturité (${quizResults.maturityLevel.label})</h3>
-                    <p>Donne une appréciation globale du profil marketing en fonction du score. Mets en perspective le niveau de maturité et sois encourageant.</p>
-                    
-                    <h3>✅ Vos Points Forts</h3>
-                    <p>Identifie 2 domaines où l'utilisateur semble avoir une bonne maturité. Explique brièvement pourquoi c'est une force.</p>
-                    
-                    <h3>🎯 Axes d'Amélioration Prioritaires</h3>
-                    <p>Identifie les 2 ou 3 axes les plus faibles (parmi les axes non sautés). Pour chaque axe, explique pourquoi il est crucial de l'améliorer.</p>
-                    
-                    <h3>🚀 Plan d'Action Recommandé</h3>
-                    <p>Fournis une liste de 3 actions concrètes et priorisées. Pour chaque action, donne une explication claire et suggère un outil ou une méthode simple pour commencer. Numérote les actions.</p>
-                `;
-                const fullReportHtml = await generateAIResponse(prompt);
-                dom.fullReport.recommendations.innerHTML = fullReportHtml;
-            }
+        Structure ta réponse comme suit, en utilisant des balises HTML (h3, h4, p, ul, li, strong, em):
+
+        <h3>Analyse Globale de votre Maturité (${quizResults.maturityLevel.label})</h3>
+        <p>Donne une appréciation globale du profil marketing en fonction du score. Mets en perspective le niveau de maturité et sois encourageant.</p>
+
+        <h3>✅ Vos Points Forts</h3>
+        <p>Identifie 2 domaines où l'utilisateur semble avoir une bonne maturité. Explique brièvement pourquoi c'est une force.</p>
+
+        <h3>🎯 Axes d'Amélioration Prioritaires</h3>
+        <p>Identifie les 2 ou 3 axes les plus faibles (parmi les axes non sautés). Pour chaque axe, explique pourquoi il est crucial de l'améliorer.</p>
+
+        <h3>🚀 Plan d'Action Recommandé</h3>
+        <p>Fournis une liste de 3 actions concrètes et priorisées. Pour chaque action, donne une explication claire et suggère un outil ou une méthode simple pour commencer. Numérote les actions.</p>
+    `;
+    const fullReportHtml = await generateAIResponse(prompt);
+    dom.fullReport.recommendations.innerHTML = fullReportHtml;
+
+    // On retourne le rapport pour pouvoir l'envoyer au Google Sheet
+    return fullReportHtml; 
+}
 
             async function generateAIResponse(prompt) {
     try {
@@ -557,61 +560,51 @@
 
             window.showLeadForm = () => dom.modal.self.classList.add('active');
             window.closeLeadForm = () => dom.modal.self.classList.remove('active');
-            
-            window.submitLeadForm = async (event) => {
-                event.preventDefault();
-                const firstname = document.getElementById('firstname').value;
-                const email = document.getElementById('email').value;
-                const company = document.getElementById('company').value;
-                const sector = document.getElementById('sector').value;
-                const leadData = { firstname, email, company, sector, score: quizResults.globalPercentage, date: new Date().toISOString() };
-                
-                // --- Début de l'explication pour la collecte des données ---
-                // Pour envoyer ces données, la méthode recommandée est d'utiliser un Webhook.
-                // Google Sheets + Apps Script est une solution gratuite et puissante.
-                // 1. Créez une nouvelle Google Sheet.
-                // 2. Allez dans Extensions > Apps Script.
-                // 3. Collez le code suivant dans l'éditeur de script et enregistrez :
-                /*
-                function doPost(e) {
-                  try {
-                    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-                    // Si la feuille est vide, ajoutez les en-têtes
-                    if (sheet.getLastRow() === 0) {
-                      sheet.appendRow(["Date", "Prénom", "Email", "Entreprise", "Secteur", "Score"]);
-                    }
-                    var data = JSON.parse(e.postData.contents);
-                    sheet.appendRow([data.date, data.firstname, data.email, data.company, data.sector, data.score]);
-                    return ContentService.createTextOutput(JSON.stringify({result: "success"})).setMimeType(ContentService.MimeType.JSON);
-                  } catch (error) {
-                    return ContentService.createTextOutput(JSON.stringify({result: "error", error: error.toString()})).setMimeType(ContentService.MimeType.JSON);
-                  }
-                }
-                */
-                // 4. Cliquez sur "Déployer" > "Nouveau déploiement".
-                // 5. Choisissez "Application Web" comme type. Donnez une description.
-                // 6. Dans "Qui a accès", sélectionnez "Tout le monde".
-                // 7. Cliquez sur "Déployer". Autorisez l'accès à votre compte Google.
-                // 8. Copiez l'URL de l'application Web fournie. C'est votre URL de webhook.
-                // --- Fin de l'explication ---
-                
-                const webhookUrl = 'https://script.google.com/macros/s/AKfycbz-I1LNPt2T0n_yP3C6FDakWXaC3GfHeLtrzd1lORbdI1vPqUWvyVlMul581fV6OhBX5w/exec'; // <-- COLLEZ VOTRE URL DE WEBHOOK ICI
-                if (webhookUrl) {
-                    try {
-                        await fetch(webhookUrl, {
-                            method: 'POST',
-                            mode: 'no-cors', // Important for simple Google Apps Script webhooks
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(leadData)
-                        });
-                    } catch (e) { console.error("Erreur lors de l'envoi au webhook:", e); }
-                } else {
-                     console.log("Données du prospect (non envoyées car pas de webhook configuré):", leadData);
-                }
 
-                closeLeadForm();
-                await generateAndShowFullReport(sector);
-            };
+
+
+window.submitLeadForm = async (event) => {
+    event.preventDefault();
+    closeLeadForm(); // On ferme le formulaire immédiatement
+
+    // 1. On génère le rapport complet et on récupère le HTML
+    const sector = document.getElementById('sector').value;
+    const aiAnalysisHtml = await generateAndShowFullReport(sector);
+
+    // 2. On prépare toutes les données à envoyer
+    const firstname = document.getElementById('firstname').value;
+    const email = document.getElementById('email').value;
+    const company = document.getElementById('company').value;
+
+    const leadData = { 
+        firstname, 
+        email, 
+        company, 
+        sector, 
+        score: quizResults.globalPercentage,
+        userAnswers: JSON.stringify(userAnswers), // On convertit les réponses en texte JSON
+        aiAnalysis: aiAnalysisHtml // On ajoute l'analyse IA
+    };
+
+    // 3. On envoie les données au webhook
+    const webhookUrl = 'https://script.google.com/macros/s/AKfycbz-I1LNPt2T0n_yP3C6FDakWXaC3GfHeLtrzd1lORbdI1vPqUWvyVlMul581fV6OhBX5w/exec'; // <-- VÉRIFIEZ QUE C'EST BIEN VOTRE URL
+    if (webhookUrl && webhookUrl.includes('script.google.com')) {
+        try {
+            await fetch(webhookUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(leadData)
+            });
+        } catch (e) { 
+            console.error("Erreur lors de l'envoi au webhook:", e); 
+        }
+    } else {
+         console.log("Données du prospect (non envoyées car pas de webhook configuré):", leadData);
+    }
+};
+
+
 
              window.downloadPDF = () => {
                 const { jsPDF } = window.jspdf;
